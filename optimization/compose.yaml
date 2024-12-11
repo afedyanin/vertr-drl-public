@@ -1,0 +1,16 @@
+# https://github.com/optuna/optuna-dashboard/blob/main/Dockerfile
+
+services:
+
+  optuna-dashboard:
+    image: ghcr.io/optuna/optuna-dashboard
+    ports:
+      - "8686:8080"
+    entrypoint: ["optuna-dashboard", "--port", "8080", "--host", "0.0.0.0", "--server", "gunicorn", "postgresql+psycopg2://postgres:admin@infra-pgsql-1:5432/optunadb"]
+    restart: always
+    networks:
+      - infra_default
+
+networks:
+  infra_default:
+    external: true

@@ -1,0 +1,16 @@
+requests
+apimoex
+psycopg
+pandas
+sqlalchemy
+pandas_ta
+stable-baselines3
+sb3-contrib
+rl_zoo3
+optuna
+torch
+gymnasium
+tinkoff-investments
+scipy
+scikit-learn
+seaborn
