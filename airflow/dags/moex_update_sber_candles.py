@@ -12,7 +12,7 @@ with DAG(
     'update_sber_candles',
     default_args={'retries': 2},
     description='Update history data from MOEX for SBER',
-    schedule_interval='2/15 6-23 * * 1-5',  # Every 15 minutes, starting at 1 minutes past the hour
+    schedule_interval='2/10 6-23 * * 5',  # Every 15 minutes, starting at 1 minutes past the hour
     start_date=datetime(2024, 10, 30, 0, 0, tzinfo=timezone.utc),
     catchup=False,
     tags=['msu', 'moex'],
@@ -35,14 +35,14 @@ with DAG(
         print(f'{rows} rows loaded')
         return rows
 
-    update_sber_day_1 = PythonOperator(
-        task_id='update_sber_day_1',
+    update_sber_min_10 = PythonOperator(
+        task_id='update_sber_min10',
         python_callable=update_candles,
         dag=dag,
         op_kwargs={
             'dbconnection': DbConnection.airflow_db_connection(),
             'instrument': Instrument.get_instrument("SBER"),
-            'interval': Interval.day_1,
+            'interval': Interval.min_10,
             'start_date_utc': None,
         },
     )
@@ -65,6 +65,6 @@ with DAG(
     )
 
     start >> [
-        update_sber_day_1,
+        update_sber_min_10,
         update_sber_hour_1
     ]

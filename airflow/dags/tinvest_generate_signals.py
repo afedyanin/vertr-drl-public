@@ -39,7 +39,7 @@ with DAG(
     'tinvest_generate_signals',
     default_args={'retries': 2},
     description='Get last signal from DB and post order to T-invest API',
-    schedule_interval='3/15 6-23 * * 1-5', # Every 15 minutes, starting at 1 minutes past the hour
+    schedule_interval='1/10 6-23 * * 5', # Every 15 minutes, starting at 1 minutes past the hour
     start_date=datetime(2024, 11, 30, 15, 0, tzinfo=timezone.utc),
     catchup=False,
     tags=['msu', 'tinvest'],
@@ -102,6 +102,7 @@ with DAG(
         strategy = StrategySb3(model)
         predictor = StrategyPredictor(data_adapter=candles_adapter, strategy=strategy)
         start_date_utc, end_date_utc = get_date_range()
+        print(f'Staring prediction for {start_date_utc} to {end_date_utc}')
         prediction = predictor.predict(start_date_utc, end_date_utc)
         origin = f'{strategy.__class__.__name__}:{model.__class__.__name__}'
         prediction.update({'origin': origin})
@@ -109,19 +110,19 @@ with DAG(
 
     def get_date_range() -> (datetime, datetime):
         end_date_utc = datetime.now(timezone.utc)
-        start_date_utc = end_date_utc - timedelta(days=5)
+        start_date_utc = end_date_utc - timedelta(days=3)
         return start_date_utc, end_date_utc
 
-    generate_signals_1min_of15 = PythonOperator(
-        task_id='generate_signals_1min_of15',
+    generate_signals_1min_of10 = PythonOperator(
+        task_id='generate_signals_1min_of10',
         python_callable=generate_signal,
         dag=dag,
         op_kwargs={
             'db_connection': DbConnection.airflow_db_connection(),
             'algo_name': 'dqn',
             'instrument': Instrument.get_instrument("SBER"),
-            'interval': Interval.hour_1,
+            'interval': Interval.min_10,
         },
     )
 
-    generate_signals_1min_of15
+    generate_signals_1min_of10

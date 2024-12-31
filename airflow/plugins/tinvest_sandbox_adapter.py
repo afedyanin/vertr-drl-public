@@ -19,10 +19,8 @@ from domain_model import Order, Operation as DomainOperation, Trade, Instrument 
     PositionSnapshot
 from json_utils import dataclass_to_json
 
-_SB_TOKEN_ = '<TOKEN>'
-SB_TRADING_ACCOUNT_ID = '<ACCOUNT_ID>'
-SB_TESTING_ACCOUNT_ID = '<ACCOUNT_ID>'
-
+_SB_TOKEN_ = 't.8DpIsag8_t2bHcaPEXZiAxDLdxbyqP7MXvDwoamPBWSDBD7dgQeMNutgas5Ay83YOlLsA-m8qSPm8Sz-FMaNuw'
+SB_TRADING_ACCOUNT_ID = 'fc66cf9b-8fb8-4d9e-ba79-a5e8b87c5aa7'
 
 class TinvestSandboxAdapter:
     def __init__(self,
@@ -52,7 +50,7 @@ class TinvestSandboxAdapter:
             instrument: DomainInstrument,
             start_date_utc: datetime | None = None,
             end_date_utc: datetime | None = None,
-            interval: CandleInterval = CandleInterval.CANDLE_INTERVAL_HOUR) -> pd.DataFrame:
+            interval: CandleInterval = CandleInterval.CANDLE_INTERVAL_10_MIN) -> pd.DataFrame:
 
         if end_date_utc is None:
             end_date_utc = datetime.now(timezone.utc)
@@ -84,6 +82,11 @@ class TinvestSandboxAdapter:
         with SandboxClient(self._token) as client:
             response = client.sandbox.open_sandbox_account()
             return response.account_id
+
+    def close_sandbox_account(self, account_id: str):
+        with SandboxClient(self._token) as client:
+            response = client.sandbox.close_sandbox_account(account_id=account_id)
+            return response
 
     def get_accounts(self) -> list[Account]:
         with SandboxClient(self._token) as client:

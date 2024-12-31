@@ -6,7 +6,7 @@ from airflow.operators.python import PythonOperator
 from portfolio_snapshot_sql_adapter import PortfolioSnapshotSqlAdapter
 from position_snapshot_sql_adapter import PositionSnapshotSqlAdapter
 from db_connection import DbConnection
-from tinvest_sandbox_adapter import SB_TRADING_ACCOUNT_ID, TinvestSandboxAdapter, SB_TESTING_ACCOUNT_ID
+from tinvest_sandbox_adapter import SB_TRADING_ACCOUNT_ID, TinvestSandboxAdapter
 
 
 # https://crontab.cronhub.io/
@@ -14,7 +14,7 @@ with DAG(
     'tinvest_make_snapshots',
     default_args={'retries': 2},
     description='Make portfolio and positions snapshots via T-invest API',
-    schedule_interval='5/5 6-23 * * 1-5', # Every 5 minutes, starting at 4 minutes past the hour
+    schedule_interval='3/5 6-23 * * 5', # Every 5 minutes, starting at 4 minutes past the hour
     start_date=datetime(2024, 11, 30, 15, 0, tzinfo=timezone.utc),
     catchup=False,
     tags=['msu', 'tinvest'],

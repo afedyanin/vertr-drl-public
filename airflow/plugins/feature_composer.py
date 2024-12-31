@@ -14,7 +14,7 @@ class FeatureComposer:
     def __init__(
             self,
             data_adapter: DataAdapter,
-            fill_missing_values: bool = False,
+            fill_missing_values: bool = True,
     ):
         if data_adapter is None:
             raise ValueError('data_adapter is not set')
@@ -35,15 +35,30 @@ class FeatureComposer:
         candles.set_index('time_utc', inplace=True)
         candles.sort_index(inplace=True)
 
+        if self._fill_missing_values:
+            candles = self._fill_missing(candles, self._data_adapter.interval)
+            candles = self._interpolate(candles)
+
         candles = self._add_returns(candles)
-        candles = self._add_returns_std(candles)
-        candles = self._add_values(candles)
-        candles = self._add_values_std(candles)
 
         candles["info_intraday_return"] = (candles["close"] - candles["open"]).round(6)
         candles.dropna(inplace=True)
 
         return candles
+
+    @staticmethod
+    def _fill_missing(
+            df: pd.DataFrame,
+            interval: Interval = Interval.hour_1) -> pd.DataFrame:
+        freq = FeatureComposer._interval_to_frequency(interval)
+        d_idx = pd.date_range(df.index.min(), df.index.max(), freq=freq)
+        df = df.reindex(index=d_idx)
+        return df
+
+    @staticmethod
+    def _interpolate(df: pd.DataFrame) -> pd.DataFrame:
+        df.interpolate(axis=0, method='polynomial', order=3, limit_direction='both', inplace=True)
+        return df
 
     @staticmethod
     def _add_returns(df: pd.DataFrame) -> pd.DataFrame:
@@ -52,6 +67,10 @@ class FeatureComposer:
         df["feature_ret_m2"] = df["feature_close_return"].shift(2)
         df["feature_ret_m3"] = df["feature_close_return"].shift(3)
         df["feature_ret_m4"] = df["feature_close_return"].shift(4)
+        df["feature_ret_m5"] = df["feature_close_return"].shift(5)
+        df["feature_ret_m6"] = df["feature_close_return"].shift(6)
+        df["feature_ret_m7"] = df["feature_close_return"].shift(7)
+        df["feature_ret_m8"] = df["feature_close_return"].shift(8)
         return df
 
     @staticmethod

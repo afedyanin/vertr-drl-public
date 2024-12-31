@@ -75,7 +75,36 @@ class Portfolio:
 
         return trading_df
 
-    def _get_operations(self) -> pd.DataFrame:
+    @staticmethod
+    def get_yield_from_operations(
+            operations_df: pd.DataFrame,
+            initial_balance: float) -> pd.DataFrame:
+        yield_df = operations_df.copy()
+        yield_df['volume'] = (yield_df['price'] * yield_df['quantity'])
+        yield_df['volume_cum'] = yield_df['volume'].cumsum()
+        yield_df['shares_qty'] = yield_df['quantity'].cumsum()
+        yield_df['commission_cum'] = yield_df['commission'].cumsum()
+        yield_df['currencies'] = initial_balance - yield_df['volume_cum']
+        yield_df['currencies_with_commission'] = yield_df['currencies'] + yield_df['commission_cum']
+        yield_df['shares_sum'] = yield_df['shares_qty'] * yield_df['price']
+        yield_df['portfolio'] = yield_df['currencies'] + yield_df['shares_sum']
+        yield_df['portfolio_with_commission'] = yield_df['currencies_with_commission'] + yield_df[
+            'shares_sum']
+        yield_df['yield'] = ((yield_df['portfolio'] - initial_balance) / initial_balance) * 100
+        yield_df['yield_with_commission'] = ((yield_df[
+                                                  'portfolio_with_commission'] - initial_balance) / initial_balance) * 100
+        yield_df.drop(columns=['price', 'quantity', 'commission',
+                               'volume', 'volume_cum', 'shares_qty',
+                               'commission_cum', 'currencies', 'currencies_with_commission',
+                               'shares_sum', 'portfolio', 'portfolio_with_commission'], inplace=True)
+
+        return yield_df
+
+    def get_yield(self, initial_balance: float) -> pd.DataFrame:
+        ops_df = self._get_operations(grouped=True)
+        return self.get_yield_from_operations(ops_df, initial_balance)
+
+    def _get_operations(self, grouped: bool = False) -> pd.DataFrame:
         operations_df = self._operations_adapter.get_operations(
             account_id=self._tinvest_adapter.account_id,
             instrument_id=self.instrument.instrument_id)
@@ -84,13 +113,18 @@ class Portfolio:
             columns=['id', 'account_id', 'parent_operation_id', 'state', 'quantity_rest', 'currency', 'figi',
                      'instrument_type', 'instrument_uid', 'asset_uid', 'position_uid', 'operation_json'], inplace=True)
         operations_df['time_utc'] = operations_df['date'].apply(
-            lambda x: datetime(x.year, x.month, x.day, x.hour, tzinfo=timezone.utc))
+            lambda x: datetime(x.year, x.month, x.day, x.hour, (x.minute // 10) * 10, tzinfo=timezone.utc))
         operations_df['direction'] = operations_df['operation_type'].apply(self._get_direction)
         operations_df['quantity'] = operations_df['quantity'].mul(operations_df['direction'])
         operations_df['commission'] = operations_df['operation_type'].apply(
             self._get_commission).mul(operations_df['payment'])
+
         operations_df.drop(columns=['date', 'payment', 'type', 'operation_type', 'direction'], inplace=True)
         operations_df.set_index('time_utc', inplace=True)
+
+        if grouped:
+            operations_df = operations_df.groupby('time_utc')[['price', 'quantity', 'commission']].sum()
+
         operations_df.sort_index(inplace=True)
         return operations_df
 

@@ -6,14 +6,14 @@ from airflow.operators.python import PythonOperator
 from db_connection import DbConnection
 from domain_model import Instrument
 from operations_sql_adapter import OperationsSqlAdapter
-from tinvest_sandbox_adapter import SB_TRADING_ACCOUNT_ID, TinvestSandboxAdapter, SB_TESTING_ACCOUNT_ID
+from tinvest_sandbox_adapter import SB_TRADING_ACCOUNT_ID, TinvestSandboxAdapter
 
 # https://crontab.cronhub.io/
 with DAG(
     'tinvest_update_operations',
     default_args={'retries': 2},
     description='Update history of operations and trades from T-invest account',
-    schedule_interval='5/15 6-23 * * 1-5',  # Every 15 minutes, starting at 3 minutes past the hour
+    schedule_interval='3/10 6-23 * * 5',  # Every 15 minutes, starting at 3 minutes past the hour
     start_date=datetime(2024, 11, 29, 18, 0, tzinfo=timezone.utc),
     catchup=False,
     tags=['msu', 'tinvest'],
@@ -38,8 +38,8 @@ with DAG(
         ops_adapter.insert_operations(account_id, ops)
         print('Updating operations completed.')
 
-    update_operations_3min_of15 = PythonOperator(
-        task_id='update_operations_3min_of15',
+    update_operations_3min_of10 = PythonOperator(
+        task_id='update_operations_3min_of10',
         python_callable=update_operations,
         dag=dag,
         op_kwargs={
@@ -52,4 +52,4 @@ with DAG(
         },
     )
 
-    update_operations_3min_of15
+    update_operations_3min_of10

@@ -13,7 +13,7 @@ with DAG(
     'tinvest_update_sber_candles',
     default_args={'retries': 2},
     description='Update history data from TINVEST for SBER',
-    schedule_interval='1/15 6-23 * * 1-5',  # Every 15 minutes, starting at 1 minutes past the hour
+    schedule_interval='1/10 6-23 * * 5',  # Every 10 minutes, starting at 1 minutes past the hour
     start_date=datetime(2024, 10, 30, 0, 0, tzinfo=timezone.utc),
     catchup=False,
     tags=['msu', 'tinvest'],
@@ -39,19 +39,19 @@ with DAG(
         print(f'{rows} rows loaded')
         return rows
 
-    tinvest_update_sber_hour_1 = PythonOperator(
-        task_id='tinvest_update_sber_hour_1',
+    tinvest_update_sber_min_10 = PythonOperator(
+        task_id='tinvest_update_sber_min_10',
         python_callable=update_candles,
         dag=dag,
         op_kwargs={
             'dbconnection': DbConnection.airflow_db_connection(),
             'instrument': Instrument.get_instrument("SBER"),
-            'interval': Interval.hour_1,
-            'start_date_utc': datetime(2022, 12, 1, 0, 0, tzinfo=timezone.utc),
+            'interval': Interval.min_10,
+            'start_date_utc': datetime(2024, 12, 1, 0, 0, tzinfo=timezone.utc),
             'account_id': SB_TRADING_ACCOUNT_ID,
             # 'account_id': SB_TESTING_ACCOUNT_ID,
         },
     )
 
 
-    tinvest_update_sber_hour_1
+    tinvest_update_sber_min_10

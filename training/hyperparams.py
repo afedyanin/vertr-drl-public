@@ -7,26 +7,87 @@ from typing import Any, Dict
 from rl_zoo3 import linear_schedule
 from torch import nn
 
-
-def ppo_params() -> Dict[str, Any]:
+def dqn_params() -> Dict[str, Any]:
     return {
-        "batch_size": 32,
-        "n_steps": 16,
         "gamma": 0.9999,
-        "learning_rate": 0.0005602358707524044,
-        "ent_coef": 0.08405937469314628,
-        "clip_range": 0.3,
-        "n_epochs": 1,
-        "gae_lambda": 0.9,
-        "max_grad_norm": 1,
-        "vf_coef": 0.9228222128896565,
+        "learning_rate": 0.005,
+        "batch_size": 512,
+        "buffer_size": int(1e6),
+        "target_update_interval": 20000,
+        "learning_starts": 0,
+        "train_freq": 1,
         "policy_kwargs": dict(
-            net_arch=[64],
-            activation_fn=nn.Tanh,
+            net_arch=[128, 128],
+            activation_fn=nn.ReLU,
+        ),
+    }
+
+def trpo_params() -> Dict[str, Any]:
+    return {
+        "batch_size": 256,
+        "n_steps": 256,
+        "gamma": 0.9999,
+        "learning_rate": 0.0005,
+        "n_critic_updates": 20,
+        "cg_max_steps": 10,
+        "target_kl": 0.02,
+        "gae_lambda": 0.8,
+        "policy_kwargs": dict(
+            net_arch=dict(pi=[256, 256], vf=[256, 256]),
+            activation_fn=nn.ReLU,
             ortho_init=False,
         ),
     }
 
+def ppo_params() -> Dict[str, Any]:
+    return {
+        "ent_coef": 0.00001,
+        "vf_coef": 0.8,
+        "max_grad_norm": 2,
+        "clip_range": 0.8,
+        "n_steps": 512,
+        "n_epochs": 3,
+        "gae_lambda": 0.7,
+        "gamma": 0.9999,
+        "learning_rate": 0.01,
+        "batch_size": 512,
+        "policy_kwargs": dict(
+            net_arch=dict(pi=[256, 256], vf=[256, 256]),
+            activation_fn=nn.LeakyReLU,
+        ),
+    }
+
+def a2c_params() -> Dict[str, Any]:
+    return {
+        "max_grad_norm": 0.7,
+        "use_rms_prop": True,
+        "gae_lambda": 1.0,
+        "n_steps": 2,
+        "ent_coef": 0.0,
+        "vf_coef": 0.5,
+        "gamma": 0.9999,
+        "normalize_advantage": False,
+        "learning_rate": 0.0007,
+        "policy_kwargs": dict(
+            net_arch=dict(pi=[256, 256], vf=[256, 256]),
+            activation_fn=nn.ReLU,
+        ),
+    }
+
+def qrdqn_params() -> Dict[str, Any]:
+    return {
+        "gamma": 0.9999,
+        "learning_rate": 0.005,
+        "batch_size": 512,
+        "buffer_size": int(1e6),
+        "target_update_interval": 20000,
+        "learning_starts": 0,
+        "train_freq": 1,
+        "policy_kwargs": dict(
+            net_arch=[128, 128],
+            activation_fn=nn.ReLU,
+        ),
+    }
 
 def ppo_lstm_params() -> Dict[str, Any]:
     return {
@@ -46,79 +107,6 @@ def ppo_lstm_params() -> Dict[str, Any]:
             ortho_init=False,
             enable_critic_lstm=True,
             lstm_hidden_size=16,
-        ),
-    }
-
-
-def trpo_params() -> Dict[str, Any]:
-    return {
-        "batch_size": 16,
-        "n_steps": 32,
-        "gamma": 0.9999,
-        "learning_rate": 0.0003750702770476366,
-        "n_critic_updates": 5,
-        "cg_max_steps": 25,
-        "target_kl": 0.03,
-        "gae_lambda": 1.0,
-        "policy_kwargs": dict(
-            net_arch=[256, 256],
-            activation_fn=nn.Tanh,
-            ortho_init=False,
-        ),
-    }
-
-
-def a2c_params() -> Dict[str, Any]:
-    return {
-        "gamma": 0.995,
-        "normalize_advantage": False,
-        "max_grad_norm": 0.9,
-        "use_rms_prop": True,
-        "gae_lambda": 0.8,
-        "n_steps": 1024,
-        "learning_rate": 0.000193150020468329,
-        "ent_coef": 1.7065880108173808e-07,
-        "vf_coef": 0.8556005755855345,
-        "policy_kwargs": dict(
-            net_arch=[64],
-            activation_fn=nn.Tanh,
-            ortho_init=False,
-            ##lr_schedule=linear_schedule,
-        ),
-    }
-
-def dqn_params() -> Dict[str, Any]:
-    return {
-        "gamma": 0.995,
-        "learning_rate": 0.0003416020887251245,
-        "batch_size": 16,
-        "buffer_size": 10000,
-        "exploration_final_eps": 0.08886619376104432,
-        "exploration_fraction": 0.05849817136891532,
-        "target_update_interval": 15000,
-        "learning_starts": 1000,
-        "train_freq": 1,
-        "policy_kwargs": dict(
-            net_arch=[64],
-        ),
-    }
-
-
-def qrdqn_params() -> Dict[str, Any]:
-    return {
-        "gamma": 0.95,
-        "learning_rate": 0.0001722920955939197,
-        "batch_size": 32,
-        "buffer_size": 100000,
-        "exploration_final_eps": 0.060543395017399214,
-        "exploration_fraction": 0.13002018039159535,
-        "target_update_interval": 10000,
-        "learning_starts": 0,
-        "train_freq": 8,
-        #"subsample_steps": 4,
-        "policy_kwargs": dict(
-            net_arch=[64],
-            n_quantiles=175,
         ),
     }
 

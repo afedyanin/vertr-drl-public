@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     db_connection = DbConnection.local_db_connection()
     instrument = Instrument.get_instrument("SBER")
-    interval = Interval.hour_1
+    interval = Interval.min_10
     device = th.device("cuda" if th.cuda.is_available() else "cpu")
 
     sql_adapter = CandlesSqlAdapter(db_connection, interval, instrument)
@@ -42,8 +42,8 @@ if __name__ == '__main__':
         log_dir="logs",
     )
 
-    train_end_time_utc = datetime(2024, 10, 31, tzinfo=timezone.utc)
-    train_start_time_utc = train_end_time_utc - timedelta(days=365*2)
+    train_end_time_utc = datetime(2024, 12, 23, tzinfo=timezone.utc)
+    train_start_time_utc = train_end_time_utc - timedelta(days=150)
 
     basic_hyperparams = {
         "policy": "MlpPolicy",
@@ -56,13 +56,13 @@ if __name__ == '__main__':
         episode_duration=1000,
         episodes=100,
         hyperparams=basic_hyperparams,
-        optimized=False)
+        optimized=True)
     print("Training completed.")
 
     return_episode_rewards = False
     eval_episodes = 5
 
-    eval_end_time_utc = datetime(2024, 12, 5, tzinfo=timezone.utc)
+    eval_end_time_utc = datetime(2024, 12, 23, tzinfo=timezone.utc)
     eval_start_time_utc = eval_end_time_utc - timedelta(days=30)
 
     rewards, steps = trainer.evaluate(

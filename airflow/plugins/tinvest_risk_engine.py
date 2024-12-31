@@ -18,7 +18,7 @@ class TinvestRiskEngine:
         self._orders_adapter = OrdersSqlAdapter(self.db_connection)
         self._signals_adapter = SignalsSqlAdapter(self.db_connection)
 
-    def post_order(self):
+    def post_order(self, quantity_lots: int = 20):
 
         last_signal = self._signals_adapter.get_last_signal()
 
@@ -37,7 +37,7 @@ class TinvestRiskEngine:
             print(f'Existing order found for order_request_id={order_request_id}. Skip executing.')
             return
 
-        order_qty = last_signal.quantity * 10
+        order_qty = last_signal.quantity * quantity_lots
         order_quantity = self._adjust_order_quantity(order_qty)
 
         if order_quantity == 0:

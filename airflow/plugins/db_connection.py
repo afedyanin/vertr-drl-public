@@ -24,7 +24,7 @@ class DbConnection:
     @staticmethod
     def airflow_db_connection():
         return DbConnection(
-            dbname='postgres',
+            dbname='msu_bp_restored',
             host='infra-pgsql-1',
             port=5432,
             user='postgres',
@@ -34,7 +34,7 @@ class DbConnection:
     @staticmethod
     def local_db_connection():
         return DbConnection(
-            dbname='postgres',
+            dbname='msu_bp_restored',
             host='localhost',
             port=5432,
             user='postgres',
